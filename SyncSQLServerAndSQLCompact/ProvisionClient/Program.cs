@@ -10,20 +10,16 @@ namespace ProvisionClient
     {
         static void Main(string[] args)
         {
-            // 创建到SyncCompactDB数据库的连接
-            var clientConn = new SqlConnection("Data Source=IT34;Initial Catalog=SyncDBClient;User ID=sa;Password=ISAsql07");
+            var clientConn = new SqlConnection("Data Source=IT34;Initial Catalog=AGE14S_new;User ID=sa;Password=ISAsql07");
 
-            // 创建到SyncDB服务器数据库的连接
-            var serverConn = new SqlConnection("Data Source=IT34;Initial Catalog=SyncDBMaster;User ID=sa;Password=ISAsql07");
+            var serverConn = new SqlConnection("Data Source=IT34;Initial Catalog=AGE14S;User ID=sa;Password=ISAsql07");
 
-            // 从SyncDB服务器数据库中获取ProductsScope同步作用域
-            DbSyncScopeDescription scopeDesc = SqlSyncDescriptionBuilder.GetDescriptionForScope("ProductsScope", serverConn);
-//            DbSyncScopeDescription scopeDesc = SqlSyncDescriptionBuilder.GetDescriptionForScope()
+            DbSyncScopeDescription scopeDesc = SqlSyncDescriptionBuilder.GetDescriptionForScope("FullTableScope", serverConn);
 
             // 基于ProductsScope同步作用域创建CE设置对象
-            var clientProvision = new SqlSyncScopeProvisioning();
-           
+            var clientProvision = new SqlSyncScopeProvisioning(scopeDesc);
 
+            clientProvision.SetCreateTableDefault(DbSyncCreationOption.Skip);
             // 开始设置过程
             clientProvision.Apply(clientConn);
         }

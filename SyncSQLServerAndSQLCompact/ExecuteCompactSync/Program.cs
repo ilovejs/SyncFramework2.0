@@ -14,15 +14,15 @@ namespace ExecuteCompactSync
     {
         static void Main(string[] args)
         {
-            var clientConn = new SqlConnection("Data Source=IT34;Initial Catalog=SyncDBClient;User ID=sa;Password=ISAsql07");
+            var clientConn = new SqlConnection("Data Source=IT34;Initial Catalog=AGE14S_new;User ID=sa;Password=ISAsql07");
 
-            var serverConn = new SqlConnection("Data Source=IT34;Initial Catalog=SyncDBMaster;User ID=sa;Password=ISAsql07");
+            var serverConn = new SqlConnection("Data Source=IT34;Initial Catalog=AGE14S;User ID=sa;Password=ISAsql07");
 
             // 创建同步代理（sync orhcestrator）
             var syncOrchestrator = new SyncOrchestrator
             {
-                LocalProvider = new SqlSyncProvider("ProductsScope", clientConn),
-                RemoteProvider = new SqlSyncProvider("ProductsScope", serverConn),  
+                LocalProvider = new SqlSyncProvider("FullTableScope", clientConn),
+                RemoteProvider = new SqlSyncProvider("FullTableScope", serverConn),  
                 Direction = SyncDirectionOrder.UploadAndDownload
             };
 
