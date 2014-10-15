@@ -22,7 +22,7 @@ namespace ExecuteCompactSync
             var syncOrchestrator = new SyncOrchestrator
             {
                 LocalProvider = new SqlSyncProvider("ProductsScope", clientConn),
-                RemoteProvider = new SqlSyncProvider("ProductsScope", serverConn),
+                RemoteProvider = new SqlSyncProvider("ProductsScope", serverConn),  
                 Direction = SyncDirectionOrder.UploadAndDownload
             };
 

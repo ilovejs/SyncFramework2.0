@@ -3,7 +3,6 @@ using System.Data.SqlServerCe;
 
 using Microsoft.Synchronization.Data;
 using Microsoft.Synchronization.Data.SqlServer;
-using Microsoft.Synchronization.Data.SqlServerCe;
 
 namespace ProvisionClient
 {
@@ -12,19 +11,21 @@ namespace ProvisionClient
         static void Main(string[] args)
         {
             // 创建到SyncCompactDB数据库的连接
-            SqlCeConnection clientConn = new SqlCeConnection(@"Data Source='D:\Sync Framework\CompactDB\SyncCompactDB.sdf'");
+            var clientConn = new SqlConnection("Data Source=IT34;Initial Catalog=SyncDBClient;User ID=sa;Password=ISAsql07");
 
             // 创建到SyncDB服务器数据库的连接
-            SqlConnection serverConn = new SqlConnection("Data Source=localhost; Initial Catalog=SyncDB; Integrated Security=True");
+            var serverConn = new SqlConnection("Data Source=IT34;Initial Catalog=SyncDBMaster;User ID=sa;Password=ISAsql07");
 
             // 从SyncDB服务器数据库中获取ProductsScope同步作用域
             DbSyncScopeDescription scopeDesc = SqlSyncDescriptionBuilder.GetDescriptionForScope("ProductsScope", serverConn);
+//            DbSyncScopeDescription scopeDesc = SqlSyncDescriptionBuilder.GetDescriptionForScope()
 
             // 基于ProductsScope同步作用域创建CE设置对象
-            SqlCeSyncScopeProvisioning clientProvision = new SqlCeSyncScopeProvisioning(clientConn, scopeDesc);
+            var clientProvision = new SqlSyncScopeProvisioning();
+           
 
             // 开始设置过程
-            clientProvision.Apply();
+            clientProvision.Apply(clientConn);
         }
     }
 }
