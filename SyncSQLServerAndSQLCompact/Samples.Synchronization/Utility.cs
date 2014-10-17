@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Data;
 using System.Data.SqlClient;
-using System.Data.SqlServerCe;
 using System.IO;
 
 namespace Samples.Synchronization
@@ -39,7 +38,8 @@ namespace Samples.Synchronization
         public static string ConnStr_SqlCeSync1
         {
 
-            get { return @"Data Source='E:\SyncSampleClient1.sdf'"; }
+//            get { return @"Data Source='E:\SyncSampleClient1.sdf'"; }
+            get { return @"Data Source=IT34; Initial Catalog=SyncSampleClient1; User ID=sa; Password=ISAsql07; Persist Security Info=True;"; }
 
         }
 
@@ -47,7 +47,8 @@ namespace Samples.Synchronization
         public static string ConnStr_SqlCeSync2
         {
 
-            get { return @"Data Source='E:\SyncSampleClient2.sdf'"; }
+            //get { return @"Data Source='E:\SyncSampleClient2.sdf'"; }
+            get { return @"Data Source=IT34; Initial Catalog=SyncSampleClient2; User ID=sa; Password=ISAsql07; Persist Security Info=True;"; }
 
         }
 
@@ -87,7 +88,7 @@ namespace Samples.Synchronization
         public static string ConnStr_SqlCeClientSync
         {
             //
-            get { return @"Data Source='E:\SyncSampleClient.sdf'; Password=" + Utility.Password_SqlCeClientSync; }
+            get { return @"Data Source=IT34; Initial Catalog=SyncSamplesDb_SqlPeer2; User ID=sa; Password=" + Utility.Password_SqlCeClientSync + "Persist Security Info=True;"; }
         }
 
         // Set the connection string for samples with servers that 
@@ -355,24 +356,24 @@ namespace Samples.Synchronization
 
         // ----------  BEGIN CODE RELATED TO SQL SERVER COMPACT --------- //
 
-        public static void DeleteAndRecreateCompactDatabase(string sqlCeConnString, bool recreateDatabase)
-        {
-
-            using (SqlCeConnection clientConn = new SqlCeConnection(sqlCeConnString))
-            {
-                if (File.Exists(clientConn.Database))
-                {
-                    File.Delete(clientConn.Database);
-                }
-            }
-
-            if (recreateDatabase == true)
-            {
-                SqlCeEngine sqlCeEngine = new SqlCeEngine(sqlCeConnString);
-                sqlCeEngine.CreateDatabase();
-            }
-
-        }
+//        public static void DeleteAndRecreateCompactDatabase(string sqlCeConnString, bool recreateDatabase)
+//        {
+//
+//            using (SqlConnection clientConn = new SqlConnection(sqlCeConnString))
+//            {
+//                if (File.Exists(clientConn.Database))
+//                {
+//                    File.Delete(clientConn.Database);
+//                }
+//            }
+//
+//            if (recreateDatabase == true)
+//            {
+//                SqlCeEngine sqlCeEngine = new SqlCEngine(sqlCeConnString);
+//                sqlCeEngine.CreateDatabase();
+//            }
+//
+//        }
 
         // ----------  END CODE RELATED TO SQL SERVER COMPACT --------- //
 
@@ -502,9 +503,9 @@ namespace Samples.Synchronization
         //Create the Customer table on the client.
         public static void CreateTableOnClient()
         {
-            using (SqlCeConnection clientConn = new SqlCeConnection(Utility.ConnStr_SqlCeClientSync))
+            using (SqlConnection clientConn = new SqlConnection(Utility.ConnStr_SqlCeClientSync))
             {
-                SqlCeCommand createTable = clientConn.CreateCommand();
+                SqlCommand createTable = clientConn.CreateCommand();
                 createTable.CommandText =
                     "CREATE TABLE Customer( " +
                     "CustomerId uniqueidentifier NOT NULL " +
@@ -527,9 +528,9 @@ namespace Samples.Synchronization
             //Execute the command over the same connection and within
             //the same transaction that Sync Framework uses
             //to create the schema on the client.
-            SqlCeCommand alterTable = new SqlCeCommand();
-            alterTable.Connection = (SqlCeConnection)clientConn;
-            alterTable.Transaction = (SqlCeTransaction)clientTran;
+            SqlCommand alterTable = new SqlCommand();
+            alterTable.Connection = (SqlConnection)clientConn;
+            alterTable.Transaction = (SqlTransaction)clientTran;
             alterTable.CommandText = String.Empty;
 
             //Execute the command, then leave the transaction and 
@@ -581,49 +582,49 @@ namespace Samples.Synchronization
         {
             int rowCount = 0;
 
-            using (SqlCeConnection clientConn = new SqlCeConnection(Utility.ConnStr_SqlCeClientSync))
+            using (SqlConnection clientConn = new SqlConnection(Utility.ConnStr_SqlCeClientSync))
             {
 
-                SqlCeCommand sqlCeCommand = clientConn.CreateCommand();
+                SqlCommand SqlCommand = clientConn.CreateCommand();
 
                 clientConn.Open();
 
                 if (tableName == "Customer")
                 {
-                    sqlCeCommand.CommandText =
+                    SqlCommand.CommandText =
                         "INSERT INTO Customer (CustomerName, SalesPerson, CustomerType) " +
                         "VALUES ('Cycle Merchants', 'Brenda Diaz', 'Wholesale') ";
-                    rowCount = sqlCeCommand.ExecuteNonQuery();
+                    rowCount = SqlCommand.ExecuteNonQuery();
 
-                    sqlCeCommand.CommandText =
+                    SqlCommand.CommandText =
                         "UPDATE Customer " +
                         "SET SalesPerson = 'Brenda Diaz' " +
                         "WHERE CustomerName = 'Exemplary Cycles'";
-                    rowCount += sqlCeCommand.ExecuteNonQuery();
+                    rowCount += SqlCommand.ExecuteNonQuery();
 
-                    sqlCeCommand.CommandText =
+                    SqlCommand.CommandText =
                         "DELETE FROM Customer " +
                         "WHERE CustomerName = 'Aerobic Exercise Company'";
-                    rowCount += sqlCeCommand.ExecuteNonQuery();
+                    rowCount += SqlCommand.ExecuteNonQuery();
                 }
 
                 else if (tableName == "Vendor")
                 {
-                    sqlCeCommand.CommandText =
+                    SqlCommand.CommandText =
                         "INSERT INTO Vendor (VendorName, CreditRating, PreferredVendor) " +
                         "VALUES ('Cycling Master', 2, 1) ";
-                    rowCount = sqlCeCommand.ExecuteNonQuery();
+                    rowCount = SqlCommand.ExecuteNonQuery();
 
-                    sqlCeCommand.CommandText =
+                    SqlCommand.CommandText =
                         "UPDATE Vendor " +
                         "SET CreditRating = 2 " +
                         "WHERE VendorName = 'Mountain Works'";
-                    rowCount += sqlCeCommand.ExecuteNonQuery();
+                    rowCount += SqlCommand.ExecuteNonQuery();
 
-                    sqlCeCommand.CommandText =
+                    SqlCommand.CommandText =
                         "DELETE FROM Vendor " +
                         "WHERE VendorName = 'Compete, Inc.'";
-                    rowCount += sqlCeCommand.ExecuteNonQuery();
+                    rowCount += SqlCommand.ExecuteNonQuery();
                 }
 
                 clientConn.Close();
@@ -639,17 +640,17 @@ namespace Samples.Synchronization
         {
             int rowCount = 0;
 
-            using (SqlCeConnection clientConn = new SqlCeConnection(Utility.ConnStr_SqlCeClientSync))
+            using (SqlConnection clientConn = new SqlConnection(Utility.ConnStr_SqlCeClientSync))
             {
 
-                SqlCeCommand sqlCeCommand = clientConn.CreateCommand();
+                SqlCommand SqlCommand = clientConn.CreateCommand();
 
                 clientConn.Open();
 
-                sqlCeCommand.CommandText =
+                SqlCommand.CommandText =
                     "DELETE FROM Customer " +
                     "WHERE CustomerName = 'Rural Cycle Emporium'";
-                rowCount += sqlCeCommand.ExecuteNonQuery();
+                rowCount += SqlCommand.ExecuteNonQuery();
 
                 clientConn.Close();
 
@@ -686,33 +687,33 @@ namespace Samples.Synchronization
                 serverConn.Close();
             }
 
-            using (SqlCeConnection clientConn = new SqlCeConnection(Utility.ConnStr_SqlCeClientSync))
+            using (SqlConnection clientConn = new SqlConnection(Utility.ConnStr_SqlCeClientSync))
             {
 
-                SqlCeCommand sqlCeCommand = clientConn.CreateCommand();
+                SqlCommand SqlCommand = clientConn.CreateCommand();
 
                 clientConn.Open();
 
-                sqlCeCommand.CommandText =
+                SqlCommand.CommandText =
                     "INSERT INTO Customer (CustomerId, CustomerName, SalesPerson, CustomerType) " +
                     "VALUES ('009aa4b6-3433-4136-ad9a-a7e1bb2528f7', 'Cycle Merchants', 'James Bailey', 'Wholesale')";
-                rowCount += sqlCeCommand.ExecuteNonQuery();
+                rowCount += SqlCommand.ExecuteNonQuery();
 
-                sqlCeCommand.CommandText =
+                SqlCommand.CommandText =
                     "UPDATE Customer " +
                     "SET CustomerType = 'Retail' " +
                     "WHERE CustomerName = 'Aerobic Exercise Company'";
-                rowCount += sqlCeCommand.ExecuteNonQuery();
+                rowCount += SqlCommand.ExecuteNonQuery();
 
-                sqlCeCommand.CommandText =
+                SqlCommand.CommandText =
                    "DELETE FROM Customer WHERE CustomerName = 'Sharp Bikes'";
-                rowCount += sqlCeCommand.ExecuteNonQuery();
+                rowCount += SqlCommand.ExecuteNonQuery();
 
-                sqlCeCommand.CommandText =
+                SqlCommand.CommandText =
                     "UPDATE Customer " +
                     "SET CustomerType = 'Wholesale' " +
                     "WHERE CustomerName = 'Exemplary Cycles'";
-                rowCount += sqlCeCommand.ExecuteNonQuery();
+                rowCount += SqlCommand.ExecuteNonQuery();
 
                 clientConn.Close();
             }

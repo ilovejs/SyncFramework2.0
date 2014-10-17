@@ -8,7 +8,6 @@ using System.IO;
 using System.Text;
 using System.Data;
 using System.Data.SqlClient;
-using System.Data.SqlServerCe;
 using Microsoft.Synchronization;
 using Microsoft.Synchronization.Data;
 using Microsoft.Synchronization.Data.SqlServer;
@@ -28,7 +27,7 @@ namespace _6_Resolve_Conflict
             //string information and making changes to the server database.
             var serverConn = new SqlConnection(Utility.ConnStr_SqlSync_Server);         //peer1
             var clientSqlConn = new SqlConnection(Utility.ConnStr_SqlSync_Client);      //peer2
-            var clientSqlCe1Conn = new SqlCeConnection(Utility.ConnStr_SqlCeSync1);     //ce 1
+            var clientSqlCe1Conn = new SqlConnection(Utility.ConnStr_SqlCeSync1);     //ce 1
 
             // Create a scope named "customer", and add the Customer table to the scope.
             // GetDescriptionForTable gets the schema of the table, so that tracking 
@@ -52,10 +51,9 @@ namespace _6_Resolve_Conflict
             //clientSqlConfig.Apply(clientSqlConn);
 
             //3. This database does not yet exist.
-            Utility.DeleteAndRecreateCompactDatabase(Utility.ConnStr_SqlCeSync1, true);
-            DbSyncScopeDescription clientSqlCeDesc = SqlSyncDescriptionBuilder.GetDescriptionForScope("customer", serverConn);
-            var clientSqlCeConfig = new SqlCeSyncScopeProvisioning(clientSqlCeDesc);
-            clientSqlCeConfig.Apply(clientSqlCe1Conn);
+            var clientSqlCeDesc = SqlSyncDescriptionBuilder.GetDescriptionForScope("customer", serverConn);
+            var clientSqlCeConfig = new SqlSyncScopeProvisioning(clientSqlCeDesc);
+            //clientSqlCeConfig.Apply(clientSqlCe1Conn);
 
 
             //============================== Initial synchronization sessions ==============================
@@ -72,7 +70,7 @@ namespace _6_Resolve_Conflict
 
             // Data is downloaded from the SQL Server client to the SQL Server Compact client.
             syncOrchestrator = new SampleSyncOrchestrator(
-                new SqlCeSyncProvider("customer", clientSqlCe1Conn),
+                new SqlSyncProvider("customer", clientSqlCe1Conn),
                 new SqlSyncProvider("customer", clientSqlConn)
             );
             syncStats = syncOrchestrator.Synchronize();
@@ -93,7 +91,7 @@ namespace _6_Resolve_Conflict
             syncOrchestrator.DisplayStats(syncStats, "subsequent");
 
             syncOrchestrator = new SampleSyncOrchestrator(
-                new SqlCeSyncProvider("customer", clientSqlCe1Conn),
+                new SqlSyncProvider("customer", clientSqlCe1Conn),
                 new SqlSyncProvider("customer", clientSqlConn)
             );
             syncStats = syncOrchestrator.Synchronize();
@@ -116,7 +114,7 @@ namespace _6_Resolve_Conflict
             syncOrchestrator.DisplayStats(syncStats, "subsequent");
 
             syncOrchestrator = new SampleSyncOrchestrator(
-                new SqlCeSyncProvider("customer", clientSqlCe1Conn),
+                new SqlSyncProvider("customer", clientSqlCe1Conn),
                 new SqlSyncProvider("customer", clientSqlConn)
                 );
             syncStats = syncOrchestrator.Synchronize();

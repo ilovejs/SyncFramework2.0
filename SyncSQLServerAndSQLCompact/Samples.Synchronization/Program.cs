@@ -23,16 +23,16 @@ namespace Samples.Synchronization
             // are performed. The Utility class handles all functionality that is not
             // directly related to synchronization, such as holding connection 
             // string information and making changes to the server database.
-            SqlConnection serverConn = new SqlConnection(Utility.ConnStr_SqlSync_Server);
-            SqlConnection clientSqlConn = new SqlConnection(Utility.ConnStr_SqlSync_Client);
-            SqlCeConnection clientSqlCe1Conn = new SqlCeConnection(Utility.ConnStr_SqlCeSync1);
-            SqlCeConnection clientSqlCe2Conn = new SqlCeConnection(Utility.ConnStr_SqlCeSync2);
+            var serverConn = new SqlConnection(Utility.ConnStr_SqlSync_Server);
+            var clientSqlConn = new SqlConnection(Utility.ConnStr_SqlSync_Client);
+            var clientSqlCe1Conn = new SqlConnection(Utility.ConnStr_SqlCeSync1);
+            var clientSqlCe2Conn = new SqlConnection(Utility.ConnStr_SqlCeSync2);
 
             // Create a scope named "filtered_customer", and add two tables to the scope.
             // GetDescriptionForTable gets the schema of each table, so that tracking 
             // tables and triggers can be created for that table. For Customer, we add
             // the entire table. For CustomerContact, we add only two of the columns.
-            DbSyncScopeDescription scopeDesc = new DbSyncScopeDescription("filtered_customer");
+            var scopeDesc = new DbSyncScopeDescription("filtered_customer");
 
             // Definition for Customer.
             DbSyncTableDescription customerDescription =
@@ -54,7 +54,7 @@ namespace Samples.Synchronization
             // and that all synchronization-related objects should be created in a 
             // database schema named "Sync". If you specify a schema, it must already exist
             // in the database.
-            SqlSyncScopeProvisioning serverConfig = new SqlSyncScopeProvisioning(scopeDesc);
+            var serverConfig = new SqlSyncScopeProvisioning(scopeDesc);
             serverConfig.SetCreateTableDefault(DbSyncCreationOption.Skip);
             serverConfig.ObjectSchema = "Sync";
 
@@ -82,18 +82,20 @@ namespace Samples.Synchronization
             // do not support separate schemas, so we prefix the name of all 
             // synchronization-related objects with "Sync" so that they are easy to
             // identify.
-            Utility.DeleteAndRecreateCompactDatabase(Utility.ConnStr_SqlCeSync1, true);
-            Utility.DeleteAndRecreateCompactDatabase(Utility.ConnStr_SqlCeSync2, false);
-            DbSyncScopeDescription clientSqlCe1Desc = SqlSyncDescriptionBuilder.GetDescriptionForScope("filtered_customer", null, "Sync", serverConn);
-            SqlCeSyncScopeProvisioning clientSqlCe1Config = new SqlCeSyncScopeProvisioning(clientSqlCe1Desc);
+            
+//            Utility.DeleteAndRecreateCompactDatabase(Utility.ConnStr_SqlCeSync1, true);
+//            Utility.DeleteAndRecreateCompactDatabase(Utility.ConnStr_SqlCeSync2, false);
+           
+            var clientSqlCe1Desc = SqlSyncDescriptionBuilder.GetDescriptionForScope("filtered_customer", null, "Sync", serverConn);
+            var clientSqlCe1Config = new SqlSyncScopeProvisioning(clientSqlCe1Desc);
             clientSqlCe1Config.ObjectPrefix = "Sync";
             clientSqlCe1Config.Apply(clientSqlCe1Conn);
 
             // Provision the existing database SyncSamplesDb_SqlPeer2 based on scope
             // information that is retrieved from the SQL Server Compact database. We could
             // have also retrieved this information from the server.
-            DbSyncScopeDescription clientSqlDesc = SqlCeSyncDescriptionBuilder.GetDescriptionForScope("filtered_customer", "Sync", clientSqlCe1Conn);
-            SqlSyncScopeProvisioning clientSqlConfig = new SqlSyncScopeProvisioning(clientSqlDesc);
+            var clientSqlDesc = SqlSyncDescriptionBuilder.GetDescriptionForScope("filtered_customer", "Sync", clientSqlCe1Conn);
+            var clientSqlConfig = new SqlSyncScopeProvisioning(clientSqlDesc);
             clientSqlConfig.ObjectSchema = "Sync";
             clientSqlConfig.Apply(clientSqlConn);
 
@@ -115,7 +117,7 @@ namespace Samples.Synchronization
             // Data is downloaded from the SQL Server client to the 
             // first SQL Server Compact client.
             syncOrchestrator = new SampleSyncOrchestrator(
-                new SqlCeSyncProvider("filtered_customer", clientSqlCe1Conn, "Sync"),
+                new SqlSyncProvider("filtered_customer", clientSqlCe1Conn, "Sync"),
                 new SqlSyncProvider("filtered_customer", clientSqlConn, null, "Sync")
                 );
             syncStats = syncOrchestrator.Synchronize();
@@ -126,15 +128,18 @@ namespace Samples.Synchronization
             // by retrieving scope information from another database, but we want to 
             // demonstrate the use of snapshots, which provide a convenient deployment
             // mechanism for Compact databases.
-            SqlCeSyncStoreSnapshotInitialization syncStoreSnapshot = new SqlCeSyncStoreSnapshotInitialization("Sync");
-            syncStoreSnapshot.GenerateSnapshot(clientSqlCe1Conn, "SyncSampleClient2.sdf");
+            
+            //TODO: no snapshot for sql server....
+
+//            SqlSyncStoreSnapshotInitialization syncStoreSnapshot = new SqlSyncStoreSnapshotInitialization("Sync");
+//            syncStoreSnapshot.GenerateSnapshot(clientSqlCe1Conn, "SyncSampleClient2.sdf");
 
             // The new SQL Server Compact client synchronizes with the server, but
             // no data is downloaded because the snapshot already contains 
             // all of the data from the first Compact database.
             syncOrchestrator = new SampleSyncOrchestrator(
                 new SqlSyncProvider("filtered_customer", serverConn, null, "Sync"),
-                new SqlCeSyncProvider("filtered_customer", clientSqlCe2Conn, "Sync")
+                new SqlSyncProvider("filtered_customer", clientSqlCe2Conn, "Sync")
                 );
             syncStats = syncOrchestrator.Synchronize();
             syncOrchestrator.DisplayStats(syncStats, "initial");
@@ -149,7 +154,7 @@ namespace Samples.Synchronization
             // Notice that the order of synchronization is different from the initial
             // sessions, but the two changes are propagated to all nodes.
             syncOrchestrator = new SampleSyncOrchestrator(
-                new SqlCeSyncProvider("filtered_customer", clientSqlCe1Conn, "Sync"),
+                new SqlSyncProvider("filtered_customer", clientSqlCe1Conn, "Sync"),
                 new SqlSyncProvider("filtered_customer", serverConn, null, "Sync")
                 );
             syncStats = syncOrchestrator.Synchronize();
@@ -157,13 +162,13 @@ namespace Samples.Synchronization
 
             syncOrchestrator = new SampleSyncOrchestrator(
                 new SqlSyncProvider("filtered_customer", clientSqlConn, null, "Sync"),
-                new SqlCeSyncProvider("filtered_customer", clientSqlCe1Conn, "Sync")
+                new SqlSyncProvider("filtered_customer", clientSqlCe1Conn, "Sync")
             );
             syncStats = syncOrchestrator.Synchronize();
             syncOrchestrator.DisplayStats(syncStats, "subsequent");
 
             syncOrchestrator = new SampleSyncOrchestrator(
-                new SqlCeSyncProvider("filtered_customer", clientSqlCe2Conn, "Sync"),
+                new SqlSyncProvider("filtered_customer", clientSqlCe2Conn, "Sync"),
                 new SqlSyncProvider("filtered_customer", clientSqlConn, null, "Sync")
             );
             syncStats = syncOrchestrator.Synchronize();
